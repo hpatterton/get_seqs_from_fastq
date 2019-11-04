@@ -6,18 +6,27 @@ int main()
 
 // Open fastq file
 
-	char* file_in = new char[255];
+char* infile_filepath = new char[1024];
+memset(infile_filepath,0,1024);
 
-//	Change the string below to point to your FASTQ file
+// Set the following string to the full path to the FASTQ format file from which you want to extract valid reads
 
-strcpy(file_in, "F:\\My Documents\\Students\\Mzwanele Ngubo\\PhD\\Sequence data\\Sample_H1\\H1_ATCACG_L001_R1_001.fastq");
-cout << "Fastq file: " <<  file_in << endl;
 
+strcpy(infile_filepath,"C:\\Users\\hpatterton\\Documents\\Students\\Mzwanele Ngubo\\PhD\\Sequence data\\Sample_H1\\H1_ATCACG_L001_R1_001.fastq");
+char* filetype_point = strrchr(infile_filepath,'.');
+int number_of_characters = filetype_point-infile_filepath;
+char* outfile_filepath = new char[1024];
+memset(outfile_filepath,0,1024);
+strncpy(outfile_filepath,infile_filepath,number_of_characters);
+strcat(outfile_filepath,"_barcodes.txt");
+
+cout << "Fastq file: " <<  infile_filepath << endl;
+cout << "Retrieving sequences..." << endl;
 // Read all the sequences to an array
 HP_DynamicStringArray* string_array = new HP_DynamicStringArray();
 HP_ReadTextFile* readfile = new HP_ReadTextFile;
 
-int entries = readfile->ReadFastqFile(file_in, string_array);
+int entries = readfile->ReadFastqFile(infile_filepath, string_array);
 cout << entries << " sequences retrieved from fastq file" << endl;
 char** primers = new char*[8];
 for(int x = 0; x < 8; x++)
@@ -25,6 +34,21 @@ for(int x = 0; x < 8; x++)
 	primers[x] = new char[18];
 	memset(primers[x], 0, 18);
 }
+
+/*
+ * The primer sequences were copied from Dai et al. (2008) Probing nucleosome function: A highly versatile library of synthetic histone H3 and H4 mutants
+ * and correspond to the following:
+ *
+ * primers[0]: U1h
+ * primers[4]: U2h complement
+ * primers[1]: U2h
+ * primers[5]: U1h complement
+ * primers[2]: D1h
+ * primers[6]: D2h complement
+ * primers[3]: D2h
+ * primers[7]: D1h complement
+ *
+ */
 
 strcpy(primers[0],"ATGTCCACGAGGTCTCT");
 strcpy(primers[4], "TACGCTGCAGGTCGAGG");
@@ -117,9 +141,8 @@ char* outfilename = new char[1024];
 
 //	Change the string below to a filename and path of your choice
 
-strcpy(outfilename, "F:\\My Documents\\Students\\Mzwanele Ngubo\\PhD\\Sequence data\\Sample_H1\\H1_ATCACG_L001_R1_001_barcodes.txt");
 fstream outfile;
-outfile.open(outfilename, fstream::out | fstream::binary);
+outfile.open(outfile_filepath, fstream::out | fstream::binary);
 char* temp_2 = new char[30];
 for(int x = 0; x < barcodes->GetNumberOfStrings(); x++)
 {
